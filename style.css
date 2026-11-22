@@ -42,4 +42,14 @@ body{
     height: 1em;
     background-color: white;
     vertical-align: text-bottom;
+    animation: blink 0.9s infinite cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes blink {
+    0%{
+        background: black;
+    }
+    50%{
+        background: white;
+    }
 }
