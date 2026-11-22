@@ -16,9 +16,10 @@ export function addNewLine() {
     terminalState.activeCommandArea = document.querySelector(".commandArea.active");
 }
 
-export function outputMessage(message) {
+export function outputMessage(message, color="white") {
     const messageLine = document.createElement("div");
     messageLine.classList.add("line");
+    messageLine.style.color = color;
     messageLine.innerHTML = message;
     document.querySelector(".interface").appendChild(messageLine);
 }

@@ -1,0 +1,21 @@
+{
+  "name": "kuro-cli-terminal-element",
+  "version": "1.0.0",
+  "description": "A customizable terminal emulator Web Component.",
+  "type": "module",
+  "exports": {
+    ".": "./js/kuro-cli.js"
+  },
+  "files": [
+    "js/kuro-cli.js",
+    "fonts/Consolas.ttf",
+    "examples/custom-commands.js",
+    "README.md"
+  ],
+  "sideEffects": [
+    "./js/kuro-cli.js"
+  ],
+  "engines": {
+    "node": ">=18"
+  }
+}

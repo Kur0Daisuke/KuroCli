@@ -3,77 +3,104 @@ import { findChild, getDirectory } from "./filesystem.js";
 import { addNewLine, outputMessage, render } from "./ui.js";
 
 export const programs = {
-    echo(param, flags = []) {
-        const newLineFlagged = flags.includes("e");
+    echo: {
+        description: "Print text to the terminal.",
+        execute(param, flags = []) {
+            const newLineFlagged = flags.includes("e");
 
-        if (!newLineFlagged) {
-            outputMessage(param.join(" "));
-        } else {
-            outputMessage(param.map(item => item === "\\n" ? "<br>" : item).join(" "));
+            if (!newLineFlagged) {
+                outputMessage(param.join(" "));
+            } else {
+                outputMessage(param.map(item => item === "\\n" ? "<br>" : item).join(" "));
+            }
         }
-
-        finishCommand();
     },
 
-    ls() {
-        const currentDirectory = getDirectory();
-        const childNodes = currentDirectory?.children?.map(child => child.name) ?? [];
-        outputMessage(childNodes.join("/"));
-        finishCommand();
+    ls: {
+        description: "List entries in the current directory.",
+        execute() {
+            const currentDirectory = getDirectory();
+            const childNodes = currentDirectory?.children?.map(child => child.name) ?? [];
+            outputMessage(childNodes.join("\u00A0".repeat(10)), "blue");
+        }
     },
 
-    cd(param) {
-        const destination = param[0];
-        if (!destination) {
-            outputMessage("no such directory : ");
-            finishCommand();
-            return;
-        }
-
-        const segments = destination.split("/").filter(Boolean);
-        const destinationPath = destination.startsWith("/")
-            ? ["root"]
-            : [...terminalState.currentPath];
-        let destinationDirectory = getDirectory(destinationPath);
-
-        for (const segment of segments) {
-            const destinationNode = findChild(destinationDirectory, segment);
-            if (destinationNode?.type !== "directory") {
-                outputMessage(`no such directory : ${destination}`);
-                finishCommand();
+    cd: {
+        description: "Change the current directory.",
+        execute(param) {
+            const destination = param[0];
+            if (!destination) {
+                outputMessage("no such directory : ");
                 return;
             }
 
-            destinationPath.push(destinationNode.name);
-            destinationDirectory = destinationNode;
+            const segments = destination.split("/").filter(Boolean);
+            const destinationPath = destination.startsWith("/")
+                ? ["root"]
+                : [...terminalState.currentPath];
+            let destinationDirectory = getDirectory(destinationPath);
+
+            for (const segment of segments) {
+                const destinationNode = findChild(destinationDirectory, segment);
+                if (destinationNode?.type !== "directory") {
+                    outputMessage(`no such directory : ${destination}`);
+                    return;
+                }
+
+                destinationPath.push(destinationNode.name);
+                destinationDirectory = destinationNode;
+            }
+
+            terminalState.currentPath = destinationPath;
         }
-
-        terminalState.currentPath = destinationPath;
-        finishCommand();
     },
 
-    cat(param) {
-        const fileName = param[0];
-        const file = findChild(getDirectory(), fileName);
+    cat: {
+        description: "Print the contents of a file.",
+        execute(param) {
+            const fileName = param[0];
+            const file = findChild(getDirectory(), fileName);
 
-        if (file?.type === "file") {
-            outputMessage(file.data);
-        } else if (file?.type === "directory") {
-            outputMessage(`cat: ${fileName}: is a directory`);
-        } else {
-            outputMessage(`cat: ${fileName || "missing file operand"}: no such file`);
+            if (file?.type === "file") {
+                outputMessage(file.data);
+            } else if (file?.type === "directory") {
+                outputMessage(`cat: ${fileName}: is a directory`);
+            } else {
+                outputMessage(`cat: ${fileName || "missing file operand"}: no such file`);
+            }
         }
-
-        finishCommand();
     },
 
-    error(param) {
-        programs.echo([`No program named '${param}' is found.`]);
+    mkdir: {
+        description: "Create a directory in the current directory.",
+        execute(param) {
+            if (param[0] == "" || param[0] == " " || !param[0]) {
+                outputMessage("Enter appropriate folder name.");
+                return;
+            }
+            const currentDirectory = getDirectory();
+            currentDirectory.children.push({
+                name: param[0],
+                type: "folder"
+            });
+        }
     },
 
-    clear() {
-        document.querySelector(".interface").innerHTML = "";
-        finishCommand()
+    help: {
+        description: "Show available commands and their descriptions.",
+        execute() {
+            const commandList = Object.entries(programs)
+                .map(([name, program]) => `${name} - ${program.description}`)
+                .join("<br>");
+            outputMessage(`Available commands:<br>${commandList}`);
+        }
+    },
+
+    clear: {
+        description: "Clear the terminal output.",
+        execute() {
+            document.querySelector(".interface").innerHTML = "";
+        }
     }
 };
 
@@ -97,6 +124,7 @@ function finishCommand() {
 export function run(script) {
     const tokens = script.split(" ");
     const command = tokens[0];
+    const program = Object.hasOwn(programs, command) ? programs[command] : null;
     const parameters = [];
     const flags = [];
 
@@ -105,9 +133,11 @@ export function run(script) {
         else flags.push(token.replace(/-/g, ""));
     });
 
-    if (Object.hasOwn(programs, command)) {
-        programs[command](parameters, flags);
+    if (program) {
+        program.execute(parameters, flags);
     } else {
-        programs.error(command);
+        outputMessage(`No program named '${command}' is found.`);
     }
+
+    finishCommand();
 }

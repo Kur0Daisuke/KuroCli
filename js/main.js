@@ -1,11 +1,4 @@
-import { terminalState } from "./state.js";
-import { initializeInput } from "./input.js";
-import { addNewLine, render } from "./ui.js";
+import "./kuro-cli.js";
+import registerCustomCommands from "../examples/custom-commands.js";
 
-terminalState.keyboardBuffer = "";
-terminalState.pointer = 0;
-terminalState.selectionPointer = 0;
-
-addNewLine();
-render();
-initializeInput();
+registerCustomCommands(document.querySelector("kuro-cli"));
