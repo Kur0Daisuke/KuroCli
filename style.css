@@ -1,0 +1,45 @@
+*{
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+@font-face {
+  font-family: 'console';
+  src: url('fonts/Consolas.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+
+body{
+    background: black;
+    font-family: 'console', Arial, sans-serif;
+    color: white;
+    margin: 20px;
+    user-select: none;
+}
+
+.line{
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+    gap: 10px;
+}
+
+.commandArea{
+    position: relative;
+    height: 100%;
+}
+
+.selected{
+    background: rgb(83, 140, 255);
+}
+
+.pointer {
+    display: inline-block;
+    width: 5px;
+    height: 1em;
+    background-color: white;
+    vertical-align: text-bottom;
+}
